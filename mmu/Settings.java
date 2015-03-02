@@ -39,15 +39,12 @@ public final class Settings {
         frame_size = 1024;
         frame_bits = (int) (Math.log(frame_size)/Math.log(2));
         memory_latency = 100;
-        page_replacement = Policy.LRU;
+        page_replacement = Policy.RANDOM;
         tlb_size = 2;
         tlb_latency = 20;
         disk_latency = 10;
         log_output = true;
     }
     
-    public static int getPage(int address){
-    	return address >> frame_bits;
-    }
 
 }

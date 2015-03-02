@@ -12,28 +12,29 @@ public class PageTable{
     }
     
     public PTE getPTE(int v_address){
-    	int page_num = Settings.getPage(v_address);
-    	PTE item;
+    	int page_num = Utils.getPage(v_address);
+    	PTE pte;
     	
     	//This virtual page has never been accessed so we need to allocate a
     	//frame for it in physical memory
-    	if((item = contents.get(page_num)) == null){
-    		item = new PTE(page_num, Memory.allocateFrame());
-    		contents.add(page_num, item);
+    	if((pte = contents.get(page_num)) == null){
+    		pte = new PTE();
+    		pte.setTranslation(page_num, Memory.allocateFrame(pte), pid);
+    		contents.add(page_num, pte);
     	}
-    	return item;
+    	return pte;
     }
     
     public String toString(){
     	StringBuilder str = new StringBuilder();
     	str.append("{\n\tpid=" + pid + ",\n\t[");
     	for(int i = 0; i < contents.size(); i++){
-    		PTE item = contents.get(i);
-    		if(item == null) continue;
+    		PTE pte = contents.get(i);
+    		if(pte == null) continue;
     		
     		str.append("\n\t\t");
     		str.append(String.format("0x%08X", i) + ": ");
-    		str.append(item);
+    		str.append(pte);
     		str.append(",");
     	}
     	str.append("\n\t]");

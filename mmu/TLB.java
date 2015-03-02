@@ -38,7 +38,7 @@ public class TLB {
         if(cache.size() > max_size){
             //The last element in the list is the LRU, because of how elements
             //are accessed
-            cache.remove(max_size - 1);
+            cache.remove(max_size);
         }
     }
     

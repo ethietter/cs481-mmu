@@ -7,21 +7,28 @@ public class PTE {
 	boolean modified;
 	int page_num;
 	int frame_num;
+	int pid;
 	
-	public PTE(int page_num, int frame_num){
+	public PTE(){
 		present = true;
-		valid = true;
+		valid = false;
 		modified = false;
+	}
+	
+	public void setTranslation(int page_num, int frame_num, int pid){
+		this.valid = true;
 		this.page_num = page_num;
 		this.frame_num = frame_num;
+		this.pid = pid;
 	}
 	
 	public String toString(){
 		StringBuilder str = new StringBuilder();
-		str.append("present=" + (present ? "1" : "0"));
+		str.append("pid=" + pid);
+		str.append("; present=" + (present ? "1" : "0"));
 		str.append("; valid=" + (valid ? "1" : "0"));
 		str.append("; modified=" + (modified ? "1" : "0"));
-		str.append("; " + String.format("0x%08X", page_num) + "=>" + String.format("0x%08X", frame_num));
+		str.append("; " + Utils.getHex(page_num) + "=>" + Utils.getHex(frame_num));
 		return str.toString();
 	}
 }

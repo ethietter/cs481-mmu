@@ -12,13 +12,13 @@ public class Simulator {
 	}
 	
 	public void run(){
-		AddressTrace t1 = new AddressTrace(1, 'R', 0xFECE01);
+		AddressTrace t1 = new AddressTrace(1, 'R', 0xAAECE01);
 		
 		
-		AddressTrace t2 = new AddressTrace(1, 'R', 0xFECE02);
-		AddressTrace t3 = new AddressTrace(1, 'R', 0xFECE03);
-		AddressTrace t4 = new AddressTrace(1, 'R', 0xAECE04);
-		AddressTrace t5 = new AddressTrace(1, 'R', 0xFECE05);
+		AddressTrace t2 = new AddressTrace(1, 'R', 0xBAECE02);
+		AddressTrace t3 = new AddressTrace(1, 'R', 0xCAECE03);
+		AddressTrace t4 = new AddressTrace(1, 'R', 0xFAECE04);
+		AddressTrace t5 = new AddressTrace(2, 'R', 0xDAECE05);
 		
 		doLookup(t1);
 		
@@ -32,16 +32,17 @@ public class Simulator {
 		
 		System.out.println("----------------------");
 		System.out.println(page_tables);
-		System.out.println(tlb);
+		Memory.print();
 	}
 
     public void doLookup(AddressTrace trace){
-    	TLBEntry entry = tlb.lookup(Settings.getPage(trace.v_address));
+    	TLBEntry entry = tlb.lookup(Utils.getPage(trace.v_address));
     	if(entry != null){//TLB hit
-    		System.out.println("hit");
+    		System.out.println(Utils.getHex(Utils.getPage(trace.v_address)));
+    		System.out.println(tlb);
+    		System.out.println("---------------------");
     	}
     	else{//TLB miss
-    		System.out.println("miss");
     		PageTable curr_table = page_tables.get(trace.pid);
     		//If curr_table doesn't exist, this process has never been accessed
     		//so the page table needs to be created

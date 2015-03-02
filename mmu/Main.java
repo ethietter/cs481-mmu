@@ -6,6 +6,7 @@ public class Main{
     	
     	
 		Settings.load();
+		Memory.init();
 		
 		Simulator sim = new Simulator();
 		sim.run();
