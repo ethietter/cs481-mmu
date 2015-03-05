@@ -1,25 +1,27 @@
 package mmu;
 
 import java.util.LinkedList;
-import java.util.List;
 import java.util.ListIterator;
 
 public class TLB {
 
-    int max_size;
-    int latency; //in nanoseconds
+    public static long max_size;
+    public static int latency; //in nanoseconds
     
-    private LinkedList<TLBEntry> cache = new LinkedList<TLBEntry>();
+    private static LinkedList<TLBEntry> cache = new LinkedList<TLBEntry>();
     
-    public TLB(){
-        this.max_size = Settings.tlb_size;
+    //Don't instantiate this class
+    private TLB(){}
+    
+    public static void init(){
+        max_size = Settings.tlb_size;
     }
 
     /*
 	Returns the relevant TLBEntry on a hit and null on
 	a miss.
     */
-    public TLBEntry lookup(int vpn){
+    public static TLBEntry lookup(int vpn){
         ListIterator<TLBEntry> it = cache.listIterator();
         TLBEntry item;
         while(it.hasNext()){
@@ -33,20 +35,24 @@ public class TLB {
         return null;
     }
 
-    public void addEntry(TLBEntry entry){
+    public static void addEntry(TLBEntry entry){
         cache.add(0, entry);
         if(cache.size() > max_size){
             //The last element in the list is the LRU, because of how elements
             //are accessed
-            cache.remove(max_size);
+            System.out.println("Removed: " + cache.remove((int) max_size));
         }
     }
     
-    public void flush(){
+    public static void removeEntry(TLBEntry entry){
+    	System.out.println("Eviction: " + cache.remove(entry));
+    }
+    
+    public static void flush(){
     	cache.clear();
     }
     
-    public String toString(){
+    public static String getString(){
     	return cache.toString();
     }
 }
