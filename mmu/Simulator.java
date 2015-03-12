@@ -1,5 +1,7 @@
 package mmu;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.HashMap;
 
 public class Simulator {
@@ -11,26 +13,21 @@ public class Simulator {
 		
 	}
 	
-	public void run(String trace_path){
-		AddressTrace t0 = new AddressTrace(1, 'R', 0xA123451);
-		AddressTrace t1 = new AddressTrace(1, 'R', 0xB123452);
-		AddressTrace t2 = new AddressTrace(1, 'R', 0xC123453);
-		AddressTrace t3 = new AddressTrace(1, 'R', 0xF123454);
-		AddressTrace t4 = new AddressTrace(2, 'R', 0xA123451);
-		AddressTrace t5 = new AddressTrace(2, 'R', 0xB123452);
-		AddressTrace t6 = new AddressTrace(2, 'R', 0xC123453);
-		AddressTrace t7 = new AddressTrace(2, 'R', 0xF123454);
-		
-		doLookup(t0);
-		doLookup(t1);	
-		doLookup(t2);
-		doLookup(t0);
-		doLookup(t3);
-		doLookup(t4);
-		doLookup(t5);
-		doLookup(t6);
-		doLookup(t7);
-		
+	public boolean run(String trace_path){
+		try {
+    		BufferedReader reader = new BufferedReader(new FileReader(trace_path));
+    	    String line;
+    	    while ((line = reader.readLine()) != null) {
+    	    	//System.out.println(parseAsTrace(line));
+    	    	doLookup(parseAsTrace(line));
+    	    }
+    	    reader.close();
+    	}
+    	catch (Exception e){
+    		System.out.println("Error reading trace file: " + e.getMessage());
+    		return false;
+    	}
+		return true;
 		
 	}
 	
@@ -72,5 +69,12 @@ public class Simulator {
     		TLB.addEntry(entry);
     		doLookup(trace);
     	}
+    }
+    
+    private AddressTrace parseAsTrace(String line){
+    	String[] exploded = line.split(" ");
+    	String addr = exploded[2];
+    	addr = addr.substring(2);
+    	return new AddressTrace(Integer.valueOf(exploded[0]), exploded[1].charAt(0), Long.parseLong(addr, 16));
     }
 }

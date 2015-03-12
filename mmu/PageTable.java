@@ -11,7 +11,7 @@ public class PageTable{
     	this.pid = pid;
     }
     
-    public PTE getPTE(int v_address){
+    public PTE getPTE(long v_address){
     	int page_num = Utils.getPage(v_address);
     	PTE pte;
     	

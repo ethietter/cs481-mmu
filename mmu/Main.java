@@ -20,7 +20,7 @@ public class Main{
     	Settings.print();
 		
 		Simulator sim = new Simulator();
-		sim.run(trace_path);
+		if(!sim.run(trace_path)) printHelp();
     }
     
     public static void printHelp(){

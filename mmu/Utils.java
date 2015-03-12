@@ -6,7 +6,11 @@ public final class Utils {
 		return String.format("0x%08X", val);
 	}
 	
-    public static int getPage(int address){
-    	return address >> Settings.frame_bits;
+	public static String getHex(long val){
+		return String.format("0x%08X", val);
+	}
+	
+    public static int getPage(long address){
+    	return (int) (address >> Settings.frame_bits);
     }
 }

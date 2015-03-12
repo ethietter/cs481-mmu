@@ -34,20 +34,9 @@ public final class Settings {
     	    reader.close();
     	}
     	catch (Exception e){
-    		System.out.println(e.getMessage());
+    		System.out.println("Error reading config file: " + e.getMessage());
     		return false;
     	}
-
-    	/*
-    	physical_size = 4096;
-        frame_size = 1024;
-        memory_latency = 100;
-        page_replacement = Policy.LRU;
-        tlb_size = 2;
-        tlb_latency = 20;
-        disk_latency = 10;
-        log_output = true;
-        */
 
         frame_bits = (int) (Math.log(frame_size)/Math.log(2));
         return true;
