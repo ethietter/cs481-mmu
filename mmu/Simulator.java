@@ -11,7 +11,7 @@ public class Simulator {
 		
 	}
 	
-	public void run(){
+	public void run(String trace_path){
 		AddressTrace t0 = new AddressTrace(1, 'R', 0xA123451);
 		AddressTrace t1 = new AddressTrace(1, 'R', 0xB123452);
 		AddressTrace t2 = new AddressTrace(1, 'R', 0xC123453);

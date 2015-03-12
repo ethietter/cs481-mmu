@@ -1,5 +1,9 @@
 package mmu;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.util.AbstractMap;
+
 public final class Settings {
 
     public enum Policy{
@@ -20,29 +24,33 @@ public final class Settings {
     //Don't instantiate this class
     private Settings(){ }
 
-    public static void load(){
-        //Load the config settings here
-        
-    	/*
-    	physical_size = 1073741824;
-        frame_size = 1024;
-        memory_latency = 100;
-        page_replacement = Policy.LRU;
-        tlb_size = 128;
-        tlb_latency = 20;
-        disk_latency = 10;
-        log_output = true;
-        */
+    public static Boolean load(String config_path){
+    	try {
+    		BufferedReader reader = new BufferedReader(new FileReader(config_path));
+    	    String line;
+    	    while ((line = reader.readLine()) != null) {
+    	    	assignVariable(parseLine(line));
+    	    }
+    	    reader.close();
+    	}
+    	catch (Exception e){
+    		System.out.println(e.getMessage());
+    		return false;
+    	}
 
+    	/*
     	physical_size = 4096;
         frame_size = 1024;
-        frame_bits = (int) (Math.log(frame_size)/Math.log(2));
         memory_latency = 100;
         page_replacement = Policy.LRU;
         tlb_size = 2;
         tlb_latency = 20;
         disk_latency = 10;
         log_output = true;
+        */
+
+        frame_bits = (int) (Math.log(frame_size)/Math.log(2));
+        return true;
     }
     
     public static void print(){
@@ -57,5 +65,53 @@ public final class Settings {
     	System.out.println("Log Output: " + log_output);
     }
     
+    private static AbstractMap.SimpleEntry<String, String> parseLine(String line){
+    	int index = 0;
+    	StringBuilder item = new StringBuilder();
+    	AbstractMap.SimpleEntry<String, String> kv = null;
+    	while(index < line.length()){
+    		char c = line.charAt(index);
+    		if(c == ':'){
+    			kv = new AbstractMap.SimpleEntry<String, String>(item.toString(), "");
+    			index++; //Skip the space
+    			item = new StringBuilder();//reset item
+    		}
+    		else{
+    			item.append(c);
+    		}
+    		index++;
+    	}
+    	kv.setValue(item.toString());
+    	return kv;
+    }
+    
+    private static void assignVariable(AbstractMap.SimpleEntry<String, String> kv){
+    	switch(kv.getKey()){
+    		case "physical-memory-size":
+    			physical_size = Long.valueOf(kv.getValue());
+    			break;
+    		case "frame-size":
+    			frame_size = Long.valueOf(kv.getValue());
+    			break;
+    		case "memory-latency":
+    			memory_latency = Integer.valueOf(kv.getValue());
+    			break;
+    		case "page-replacement":
+    			page_replacement = Policy.valueOf(kv.getValue());
+    			break;
+    		case "tlb-size":
+    			tlb_size = Long.valueOf(kv.getValue());
+    			break;
+    		case "tlb-latency":
+    			tlb_latency = Integer.valueOf(kv.getValue());
+    			break;
+    		case "disk-latency":
+    			disk_latency = Integer.valueOf(kv.getValue());
+    			break;
+    		case "logging-output":
+    			log_output = "on".equals(kv.getValue()) ? true : false;
+    			break;
+    	}
+    }
 
 }
