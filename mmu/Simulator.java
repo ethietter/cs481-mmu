@@ -12,22 +12,24 @@ public class Simulator {
 	}
 	
 	public void run(){
-		AddressTrace t1 = new AddressTrace(1, 'R', 0xA123451);
+		AddressTrace t0 = new AddressTrace(1, 'R', 0xA123451);
+		AddressTrace t1 = new AddressTrace(1, 'R', 0xB123452);
+		AddressTrace t2 = new AddressTrace(1, 'R', 0xC123453);
+		AddressTrace t3 = new AddressTrace(1, 'R', 0xF123454);
+		AddressTrace t4 = new AddressTrace(2, 'R', 0xA123451);
+		AddressTrace t5 = new AddressTrace(2, 'R', 0xB123452);
+		AddressTrace t6 = new AddressTrace(2, 'R', 0xC123453);
+		AddressTrace t7 = new AddressTrace(2, 'R', 0xF123454);
 		
-		
-		AddressTrace t2 = new AddressTrace(1, 'R', 0xB123452);
-		AddressTrace t3 = new AddressTrace(1, 'R', 0xC123453);
-		AddressTrace t4 = new AddressTrace(1, 'R', 0xF123454);
-		AddressTrace t5 = new AddressTrace(2, 'R', 0xD123455);
-		
-		doLookup(t1);
-		
-		
+		doLookup(t0);
+		doLookup(t1);	
 		doLookup(t2);
-		
+		doLookup(t0);
 		doLookup(t3);
 		doLookup(t4);
 		doLookup(t5);
+		doLookup(t6);
+		doLookup(t7);
 		
 		
 	}
@@ -38,6 +40,7 @@ public class Simulator {
 		Memory.print();
 		System.out.println("TLB: ");
 		System.out.println(TLB.getString());
+		System.out.println("LRU List: " + Memory.lru_list);
 		System.out.println("\n***********************************************************************************************************\n\n");
 	}
 
@@ -48,14 +51,14 @@ public class Simulator {
     	}
     	TLBEntry entry = TLB.lookup(Utils.getPage(trace.v_address));
     	if(entry != null){//TLB hit
-    		System.out.println("Hit");
+    		//System.out.println("Hit");
         	hardwareDump();
     		//System.out.println(Utils.getHex(Utils.getPage(trace.v_address)));
     		//System.out.println(TLB.getString());
     		//System.out.println("---------------------");
     	}
     	else{//TLB miss
-    		System.out.println("Miss");
+    		//System.out.println("Miss");
     		PageTable curr_table = page_tables.get(trace.pid);
     		//If curr_table doesn't exist, this process has never been accessed
     		//so the page table needs to be created

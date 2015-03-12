@@ -38,11 +38,23 @@ public final class Settings {
         frame_size = 1024;
         frame_bits = (int) (Math.log(frame_size)/Math.log(2));
         memory_latency = 100;
-        page_replacement = Policy.RANDOM;
+        page_replacement = Policy.LRU;
         tlb_size = 2;
         tlb_latency = 20;
         disk_latency = 10;
         log_output = true;
+    }
+    
+    public static void print(){
+    	System.out.println("Physical Size: " + physical_size);
+    	System.out.println("Frame Size: " + frame_size);
+    	System.out.println("Frame Bits: " + frame_bits);
+    	System.out.println("Memory Latency: " + memory_latency);
+    	System.out.println("Page Replacement: " + page_replacement.toString());
+    	System.out.println("TLB Size: " + tlb_size);
+    	System.out.println("TLB Latency: " + tlb_latency);
+    	System.out.println("Disk Latency: " + disk_latency);
+    	System.out.println("Log Output: " + log_output);
     }
     
 

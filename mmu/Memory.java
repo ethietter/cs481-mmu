@@ -1,12 +1,18 @@
 package mmu;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
 public class Memory {
 
-	private static LinkedList<Frame> frames = new LinkedList<Frame>();
-	private static int next_page = 0;
+	private static ArrayList<Frame> frames = new ArrayList<Frame>();
+	//For use with the LRU replacement policy
+	public static LRUStruct lru_list = new LRUStruct();
+	
+	//The next_page index is used for all policies until memory is full,
+	//and for FIFO at each allocateFrame() request
+	private static int next_frame = 0;
 	private static int num_frames;
 	
 	public static void init(){
@@ -14,10 +20,13 @@ public class Memory {
 	}
 	
 	public static int allocateFrame(PTE pte_ref){
-		int page_index = next_page;
-		if(next_page < num_frames){
-			next_page++;
+		int page_index = next_frame;
+		if(next_frame < num_frames){
 			frames.add(page_index, new Frame(pte_ref));
+			if(Settings.page_replacement == Settings.Policy.LRU){
+				lru_list.addNode(next_frame);
+			}
+			next_frame++;
 		}
 		else{
 			page_index = evictFrame();
@@ -29,6 +38,12 @@ public class Memory {
 	
 	public static Frame getFrame(int frame_num){
 		return frames.get(frame_num);
+	}
+	
+	public static void frameHit(int frame_num){
+		if(Settings.page_replacement == Settings.Policy.LRU){
+			lru_list.useNode(frame_num);
+		}
 	}
 
 	public static void print(){
@@ -44,10 +59,25 @@ public class Memory {
 	
 	private static int evictFrame(){
 		int evicted = 0;
-		if(Settings.page_replacement.equals(Settings.Policy.RANDOM)){
-			evicted = (int) Math.floor(Math.random() * frames.size());
-			frames.get(evicted).evict();
+		switch(Settings.page_replacement){
+			case RANDOM:
+				evicted = (int) Math.floor(Math.random() * frames.size());
+				break;
+			case FIFO:
+				evicted = next_frame % num_frames;
+				next_frame++;
+				break;
+			case LFU:
+				break;
+			case LRU:
+				evicted = lru_list.getLRUNode().val;
+				break;
+			case MFU:
+				break;
+			default:
+				break;
 		}
+		frames.get(evicted).evict();
 		return evicted;
 	}
 	

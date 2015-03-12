@@ -27,8 +27,10 @@ public class TLB {
         while(it.hasNext()){
             item = it.next();
             if(item.virtual_page == vpn){
+            	//Move the element to the front of the linked list representing the cache
             	it.remove();
             	cache.addFirst(item);
+            	Memory.frameHit(item.physical_frame);
                 return item;
             }
         }
@@ -38,14 +40,13 @@ public class TLB {
     public static void addEntry(TLBEntry entry){
         cache.add(0, entry);
         if(cache.size() > max_size){
-            //The last element in the list is the LRU, because of how elements
-            //are accessed
-            System.out.println("Removed: " + cache.remove((int) max_size));
+            //The last element in the list is the LRU
+            cache.remove((int) max_size);
         }
     }
     
     public static void removeEntry(TLBEntry entry){
-    	System.out.println("Eviction: " + cache.remove(entry));
+    	cache.remove(entry);
     }
     
     public static void flush(){
