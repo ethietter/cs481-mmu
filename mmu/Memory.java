@@ -19,7 +19,8 @@ public class Memory {
 		num_frames = (int) (Settings.physical_size/Settings.frame_size);
 	}
 	
-	public static int allocateFrame(PTE pte_ref){
+	//All calls to allocateFrame indicate that a page fault happened
+	public static int allocateFrame(PTE pte_ref, int pid){
 		int page_index = next_frame;
 		if(next_frame < num_frames){
 			frames.add(page_index, new Frame(pte_ref));
@@ -33,6 +34,7 @@ public class Memory {
 			Frame frame = frames.get(page_index);
 			frame.setPTE(pte_ref);
 		}
+		Simulator.pageFault(pid);
 		return page_index;
 	}
 	

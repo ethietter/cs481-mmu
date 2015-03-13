@@ -19,9 +19,16 @@ public class PageTable{
     	//frame for it in physical memory
     	if((pte = contents.get(page_num)) == null){
     		pte = new PTE();
-    		pte.setTranslation(page_num, Memory.allocateFrame(pte), pid);
+    		pte.setTranslation(page_num, Memory.allocateFrame(pte, pid), pid);
     		contents.add(page_num, pte);
     	}
+    	else {
+    		pte = contents.get(page_num);
+    		if(!pte.present){ //This virtual page is not resident in memory, so allocate a frame for it
+    			pte.setTranslation(page_num, Memory.allocateFrame(pte, pid), pid);
+    		}
+    	}
+    	
     	return pte;
     }
     

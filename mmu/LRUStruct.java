@@ -28,7 +28,7 @@ public class LRUStruct {
 	}
 	
 	public void useNode(int frame_index){
-		System.out.println(frame_map.get(frame_index));
+		//System.out.println(frame_map.get(frame_index));
 		frame_map.get(frame_index).moveToEnd();
 	}
 	
