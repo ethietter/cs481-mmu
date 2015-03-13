@@ -40,6 +40,8 @@ public class TLB {
         cache.add(0, entry);
         if(cache.size() > max_size){
             //The last element in the list is the LRU
+        	LookupLogInfo.TLBEviction.evicted = true;
+        	LookupLogInfo.TLBEviction.v_page = cache.get((int) max_size).virtual_page;
             cache.remove((int) max_size);
         }
     }

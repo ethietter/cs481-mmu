@@ -103,6 +103,9 @@ public class Simulator {
     		if(trace.op.equals(AddressTrace.Op.W)){
     			Memory.writeFrame(entry.physical_frame, trace.pid);
     		}
+    		
+    		LookupLogInfo.v_page = entry.virtual_page;
+    		LookupLogInfo.frame = entry.physical_frame;
         	//hardwareDump();
     	}
     	else{//TLB miss

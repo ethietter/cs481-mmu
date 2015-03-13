@@ -24,7 +24,11 @@ public class Frame {
 	}
 	
 	public void evict(){
+		LookupLogInfo.MemEviction.evicted = true;
 		if(pte != null){
+			LookupLogInfo.MemEviction.modified = pte.modified;
+			LookupLogInfo.MemEviction.v_page = pte.page_num;
+			LookupLogInfo.MemEviction.pid = pte.pid;
 			pte.present = false;
 			//Disk access for evicting a dirty frame is already counted in Simulator.java
 			Simulator.frameEvicted(pte.pid, pte.modified);
