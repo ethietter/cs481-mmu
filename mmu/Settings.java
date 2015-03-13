@@ -20,6 +20,7 @@ public final class Settings {
     public static int tlb_latency; //in nanoseconds
     public static int disk_latency; //in milliseconds
     public static boolean log_output;
+    public static long offset_mask;
 
     //Don't instantiate this class
     private Settings(){ }
@@ -39,6 +40,12 @@ public final class Settings {
     	}
 
         frame_bits = (int) (Math.log(frame_size)/Math.log(2));
+        int offset_bits = address_size - frame_bits;
+        offset_mask = 0;
+        for(int i = 0; i < offset_bits; i++){
+        	offset_mask = offset_mask << 1;
+        	offset_mask++;
+        }
         return true;
     }
     

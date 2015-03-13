@@ -33,7 +33,7 @@ public class Simulator {
     	    while ((line = reader.readLine()) != null) {
     	    	//System.out.println(parseAsTrace(line));
     	    	real_mem_ref_count++;
-    	    	doLookup(parseAsTrace(line));
+    	    	startLookup(parseAsTrace(line));
     	    }
     	    reader.close();
     	}
@@ -45,6 +45,7 @@ public class Simulator {
 		
 	}
 	
+	
 	public static void hardwareDump(){
 		System.out.println("Page tables: \n" + page_tables);
 		System.out.println("Memory: ");
@@ -54,14 +55,47 @@ public class Simulator {
 		System.out.println("LRU List: " + Memory.lru_list);
 		System.out.println("\n***********************************************************************************************************\n\n");
 	}
+	
+	public static void log(String str){
+		if(Settings.log_output) System.err.print(str);
+	}
 
-    public static void doLookup(AddressTrace trace){
+	private static void startLookup(AddressTrace trace){
+		String op = "";
+		switch(trace.op){
+			case R:
+				op = "Load from";
+				break;
+			case W:
+				op = "Store to";
+				break;
+			case I:
+				op = "Instruction fetch from";
+				break;
+		}
+		log("Process[" + trace.pid + "]: " + op + " " + Utils.getHex(trace.v_address) +
+			" (page: " + Utils.getPage(trace.v_address) + ", offset: " + Utils.getOffset(trace.v_address) + ")\n");
+		
+		doLookup(trace);
+	}
+	
+	private static void doLookup(AddressTrace trace){
+		doLookup(trace, false);
+	}
+	
+	//The is_recursive parameter lets us know if this is the first call to doLookup.
+	//If so, it will log TLB hit info
+    private static void doLookup(AddressTrace trace, boolean is_recursive){
+    	if(!is_recursive) log("\tTLB hit? ");
+    	
     	if(curr_process != trace.pid){
     		TLB.flush();
     		curr_process = trace.pid;
     	}
     	TLBEntry entry = TLB.lookup(Utils.getPage(trace.v_address));
     	if(entry != null){//TLB hit
+    		if(!is_recursive) log("yes\n");
+    		
     		if(trace.op.equals(AddressTrace.Op.I) || trace.op.equals(AddressTrace.Op.R)){
     			Memory.readFrame(entry.physical_frame, trace.pid);
     		}
@@ -71,6 +105,10 @@ public class Simulator {
         	//hardwareDump();
     	}
     	else{//TLB miss
+    		if(!is_recursive) {
+    			log("no\n"); //Not a TLB hit
+    			log("\tPage fault? ");
+    		}
     		PageTable curr_table = page_tables.get(trace.pid);
     		//If curr_table doesn't exist, this process has never been accessed
     		//so the page table needs to be created, along with a SummaryData object
@@ -80,11 +118,18 @@ public class Simulator {
     			page_tables.put(trace.pid, curr_table);
     		}
     		tlbMiss(trace.pid);
-    		PTE pte = curr_table.getPTE(trace.v_address);
+    		PageTable.LookupRecord lookup_record = curr_table.getPTE(trace.v_address);
+    		PTE pte = lookup_record.pte;
+    		if(lookup_record.did_fault){
+    			log("yes\n"); //Not a page fault
+    		}
+    		else{
+    			log("no\n"); //Page fault
+    		}
     		entry = new TLBEntry(pte.page_num, pte.frame_num);
     		Memory.getFrame(pte.frame_num).setTLBEntry(entry);
     		TLB.addEntry(entry);
-    		doLookup(trace);
+    		doLookup(trace, true);
     	}
     }
     
@@ -126,13 +171,13 @@ public class Simulator {
     public static void printSummary(){
     	double overall_latency = running_latency/((double) 1000000);
     	double avg_latency = overall_latency/real_mem_ref_count;
-    	int slowdown = 0;
+    	double slowdown = overall_latency/(real_mem_ref_count*((float) Settings.memory_latency)/1000000);
     	
     	//System.out.println("Mem=" + mem_accesses + " Disk=" + disk_accesses + " TLB=" + tlb_accesses);
     	
-    	System.out.println("Overall latency (milliseconds): " + String.format("%.6f", overall_latency));
-    	System.out.println("Average memory access latency (milliseconds/reference): " + String.format("%.6f", avg_latency));
-    	System.out.println("Slowdown: " + slowdown);
+    	System.out.println("Overall latency (milliseconds): " + String.format("%.6f", overall_latency) + ".");
+    	System.out.println("Average memory access latency (milliseconds/reference): " + String.format("%.6f", avg_latency) + ".");
+    	System.out.println("Slowdown: " + String.format("%.2f", slowdown) + ".");
     	System.out.println("");
     	
     	int o_mem_references = 0;
