@@ -55,14 +55,10 @@ public class Simulator {
     	}
     	TLBEntry entry = TLB.lookup(Utils.getPage(trace.v_address));
     	if(entry != null){//TLB hit
-    		//System.out.println("Hit");
+    		memReference(trace.pid);
         	hardwareDump();
-    		//System.out.println(Utils.getHex(Utils.getPage(trace.v_address)));
-    		//System.out.println(TLB.getString());
-    		//System.out.println("---------------------");
     	}
     	else{//TLB miss
-    		//System.out.println("Miss");
     		PageTable curr_table = page_tables.get(trace.pid);
     		//If curr_table doesn't exist, this process has never been accessed
     		//so the page table needs to be created, along with a SummaryData object
@@ -71,6 +67,7 @@ public class Simulator {
     			curr_table = new PageTable(trace.pid);
     			page_tables.put(trace.pid, curr_table);
     		}
+    		tlbMiss(trace.pid);
     		PTE pte = curr_table.getPTE(trace.v_address);
     		entry = new TLBEntry(pte.page_num, pte.frame_num);
     		Memory.getFrame(pte.frame_num).setTLBEntry(entry);
@@ -83,6 +80,10 @@ public class Simulator {
     	summaries.get(pid).page_faults++;
     }
     
+    public static void memReference(int pid){
+    	summaries.get(pid).mem_references++;
+    }
+    
     public static void frameEvicted(int pid, boolean is_dirty){
     	if(is_dirty){
     		summaries.get(pid).dirty_evictions++;
@@ -90,6 +91,10 @@ public class Simulator {
     	else{
     		summaries.get(pid).clean_evictions++;
     	}
+    }
+    
+    public static void tlbMiss(int pid){
+    	summaries.get(pid).tlb_misses++;
     }
     
     public static void printSummary(){

@@ -24,6 +24,8 @@ public class Memory {
 		int page_index = next_frame;
 		if(next_frame < num_frames){
 			frames.add(page_index, new Frame(pte_ref));
+			pte_ref.present = true;
+			Simulator.memReference(pid);
 			if(Settings.page_replacement == Settings.Policy.LRU){
 				lru_list.addNode(next_frame);
 			}

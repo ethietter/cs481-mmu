@@ -29,6 +29,8 @@ public class PageTable{
     		}
     	}
     	
+    	Simulator.memReference(pid);
+    	
     	return pte;
     }
     

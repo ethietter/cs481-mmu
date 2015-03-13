@@ -10,7 +10,7 @@ public class PTE {
 	int pid;
 	
 	public PTE(){
-		present = true;
+		present = false;
 		valid = false;
 		modified = false;
 	}

@@ -27,6 +27,7 @@ public class Frame {
 		if(pte != null){
 			pte.present = false;
 			Simulator.frameEvicted(pte.pid, pte.modified);
+			Simulator.memReference(pte.pid);
 			if(tlb_entry != null){
 				TLB.removeEntry(tlb_entry);
 			}
