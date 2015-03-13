@@ -38,6 +38,7 @@ public class Memory {
 			Frame frame = frames.get(page_index);
 			frame.setPTE(pte_ref);
 		}
+		LookupLogInfo.page_fault = true;
 		Simulator.pageFault(pid);
 		Simulator.diskAccess();
 		return page_index;

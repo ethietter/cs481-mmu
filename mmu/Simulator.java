@@ -61,6 +61,7 @@ public class Simulator {
 	}
 
 	private static void startLookup(AddressTrace trace){
+		LookupLogInfo.reset();
 		String op = "";
 		switch(trace.op){
 			case R:
@@ -77,6 +78,7 @@ public class Simulator {
 			" (page: " + Utils.getPage(trace.v_address) + ", offset: " + Utils.getOffset(trace.v_address) + ")\n");
 		
 		doLookup(trace);
+		LookupLogInfo.logState();
 	}
 	
 	private static void doLookup(AddressTrace trace){
@@ -86,7 +88,6 @@ public class Simulator {
 	//The is_recursive parameter lets us know if this is the first call to doLookup.
 	//If so, it will log TLB hit info
     private static void doLookup(AddressTrace trace, boolean is_recursive){
-    	if(!is_recursive) log("\tTLB hit? ");
     	
     	if(curr_process != trace.pid){
     		TLB.flush();
@@ -94,7 +95,7 @@ public class Simulator {
     	}
     	TLBEntry entry = TLB.lookup(Utils.getPage(trace.v_address));
     	if(entry != null){//TLB hit
-    		if(!is_recursive) log("yes\n");
+    		if(!is_recursive) LookupLogInfo.tlb_hit = true;
     		
     		if(trace.op.equals(AddressTrace.Op.I) || trace.op.equals(AddressTrace.Op.R)){
     			Memory.readFrame(entry.physical_frame, trace.pid);
@@ -106,8 +107,7 @@ public class Simulator {
     	}
     	else{//TLB miss
     		if(!is_recursive) {
-    			log("no\n"); //Not a TLB hit
-    			log("\tPage fault? ");
+    			LookupLogInfo.tlb_hit = false;
     		}
     		PageTable curr_table = page_tables.get(trace.pid);
     		//If curr_table doesn't exist, this process has never been accessed
@@ -118,14 +118,7 @@ public class Simulator {
     			page_tables.put(trace.pid, curr_table);
     		}
     		tlbMiss(trace.pid);
-    		PageTable.LookupRecord lookup_record = curr_table.getPTE(trace.v_address);
-    		PTE pte = lookup_record.pte;
-    		if(lookup_record.did_fault){
-    			log("yes\n"); //Not a page fault
-    		}
-    		else{
-    			log("no\n"); //Page fault
-    		}
+    		PTE pte = curr_table.getPTE(trace.v_address);
     		entry = new TLBEntry(pte.page_num, pte.frame_num);
     		Memory.getFrame(pte.frame_num).setTLBEntry(entry);
     		TLB.addEntry(entry);
