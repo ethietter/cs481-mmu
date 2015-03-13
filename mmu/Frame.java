@@ -26,6 +26,7 @@ public class Frame {
 	public void evict(){
 		if(pte != null){
 			pte.present = false;
+			//Disk access for evicting a dirty frame is already counted in Simulator.java
 			Simulator.frameEvicted(pte.pid, pte.modified);
 			Simulator.memReference(pte.pid);
 			if(tlb_entry != null){
@@ -44,6 +45,12 @@ public class Frame {
 	public void setTLBEntry(TLBEntry t){
 		this.tlb_entry = t;
 	}
+	
+	public void write(){
+		pte.modified = true;
+		Simulator.memReference(pte.pid);
+	}
+	
 	
 	public String toString(){
 		StringBuilder str = new StringBuilder();

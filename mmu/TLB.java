@@ -30,7 +30,6 @@ public class TLB {
             	//Move the element to the front of the linked list representing the cache
             	it.remove();
             	cache.addFirst(item);
-            	Memory.frameHit(item.physical_frame);
                 return item;
             }
         }

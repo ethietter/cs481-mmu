@@ -3,8 +3,8 @@ package mmu;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map.Entry;
 
 public class Simulator {
@@ -12,6 +12,12 @@ public class Simulator {
 	private static HashMap<Integer, PageTable> page_tables = new HashMap<Integer, PageTable>();
 	private static HashMap<Integer, SummaryData> summaries = new HashMap<Integer, SummaryData>();
 	private static int curr_process;
+	
+	private static long running_latency = 0; //In nanoseconds
+	private static int real_mem_ref_count = 0; //*Actual* memory references that the process knows about
+	private static int disk_accesses = 0;
+	private static int mem_accesses = 0;
+	private static int tlb_accesses = 0;
 	
 	private Simulator(){
 	}
@@ -26,6 +32,7 @@ public class Simulator {
     	    String line;
     	    while ((line = reader.readLine()) != null) {
     	    	//System.out.println(parseAsTrace(line));
+    	    	real_mem_ref_count++;
     	    	doLookup(parseAsTrace(line));
     	    }
     	    reader.close();
@@ -55,8 +62,13 @@ public class Simulator {
     	}
     	TLBEntry entry = TLB.lookup(Utils.getPage(trace.v_address));
     	if(entry != null){//TLB hit
-    		memReference(trace.pid);
-        	hardwareDump();
+    		if(trace.op.equals(AddressTrace.Op.I) || trace.op.equals(AddressTrace.Op.R)){
+    			Memory.readFrame(entry.physical_frame, trace.pid);
+    		}
+    		if(trace.op.equals(AddressTrace.Op.W)){
+    			Memory.writeFrame(entry.physical_frame, trace.pid);
+    		}
+        	//hardwareDump();
     	}
     	else{//TLB miss
     		PageTable curr_table = page_tables.get(trace.pid);
@@ -80,13 +92,11 @@ public class Simulator {
     	summaries.get(pid).page_faults++;
     }
     
-    public static void memReference(int pid){
-    	summaries.get(pid).mem_references++;
-    }
     
     public static void frameEvicted(int pid, boolean is_dirty){
     	if(is_dirty){
     		summaries.get(pid).dirty_evictions++;
+    		diskAccess();
     	}
     	else{
     		summaries.get(pid).clean_evictions++;
@@ -96,14 +106,32 @@ public class Simulator {
     public static void tlbMiss(int pid){
     	summaries.get(pid).tlb_misses++;
     }
+
+    public static void memReference(int pid){
+    	summaries.get(pid).mem_references++;
+    	running_latency += Settings.memory_latency; //Already in nanoseconds
+    	mem_accesses++;
+    }
+    
+    public static void diskAccess(){
+    	running_latency += Settings.disk_latency * Math.pow(10, 6); //Convert milliseconds to nanoseconds
+    	disk_accesses++;
+    }
+    
+    public static void tlbAccess(){
+    	running_latency += Settings.tlb_latency; //Already in nanoseconds
+    	tlb_accesses++;
+    }
     
     public static void printSummary(){
-    	int overall_latency = 0;
-    	int avg_latency = 0;
+    	double overall_latency = running_latency/((double) 1000000);
+    	double avg_latency = overall_latency/real_mem_ref_count;
     	int slowdown = 0;
     	
-    	System.out.println("Overall latency (milliseconds): " + overall_latency);
-    	System.out.println("Average memory access latency (milliseconds/reference): " + avg_latency);
+    	//System.out.println("Mem=" + mem_accesses + " Disk=" + disk_accesses + " TLB=" + tlb_accesses);
+    	
+    	System.out.println("Overall latency (milliseconds): " + String.format("%.6f", overall_latency));
+    	System.out.println("Average memory access latency (milliseconds/reference): " + String.format("%.6f", avg_latency));
     	System.out.println("Slowdown: " + slowdown);
     	System.out.println("");
     	
@@ -112,20 +140,39 @@ public class Simulator {
     	int o_page_faults = 0;
     	int o_clean_evictions = 0;
     	int o_dirty_evictions = 0;
-    	int o_percent_dirty = 0;
+    	double o_percent_dirty = 0;
     	
+    	int[] process_ids = new int[summaries.size()];
+    	int pid_index = 0;
+
+    	for (Entry<Integer, SummaryData> entry : summaries.entrySet()) {
+    		SummaryData summary = entry.getValue();
+    		o_mem_references	+= summary.mem_references;
+    		o_tlb_misses 		+= summary.tlb_misses;
+    		o_page_faults		+= summary.page_faults;
+    		o_clean_evictions	+= summary.clean_evictions;
+    		o_dirty_evictions	+= summary.dirty_evictions;
+    		process_ids[pid_index] = entry.getKey();
+    		pid_index++;
+    	}
+    	
+    	if(o_clean_evictions + o_dirty_evictions != 0){
+    		o_percent_dirty = 100*o_dirty_evictions/(o_clean_evictions + o_dirty_evictions);
+    	}
     	System.out.println("Overall");
     	System.out.println("\tMemory References: " + o_mem_references);
     	System.out.println("\tTLB misses: " + o_tlb_misses);
     	System.out.println("\tPage faults: " + o_page_faults);
     	System.out.println("\tClean evictions: " + o_clean_evictions);
     	System.out.println("\tDirty evictions: " + o_dirty_evictions);
-    	System.out.println("\tPercentage dirty evictions: " + o_percent_dirty);
+    	System.out.println("\tPercentage dirty evictions: " + String.format("%.2f", o_percent_dirty) + "%");
     	System.out.println("");
     	
-    	for (Entry<Integer, SummaryData> entry : summaries.entrySet()) {
-        	printProcessSummary(entry.getKey(), entry.getValue());
+    	Arrays.sort(process_ids);
+    	for(int i = 0; i < process_ids.length; i++){
+    		printProcessSummary(process_ids[i], summaries.get(process_ids[i]));
     	}
+    	
     }
     
     private static void printProcessSummary(int pid, SummaryData summary){
@@ -135,7 +182,13 @@ public class Simulator {
     	System.out.println("\tPage faults: " + summary.page_faults);
     	System.out.println("\tClean evictions: " + summary.clean_evictions);
     	System.out.println("\tDirty evictions: " + summary.dirty_evictions);
-    	System.out.println("\tPercentage dirty evictions: " + ((float) summary.dirty_evictions)/(summary.clean_evictions + summary.dirty_evictions));
+
+    	double percent_dirty = 0;
+    	if(summary.clean_evictions + summary.dirty_evictions != 0){
+    		percent_dirty = 100*summary.dirty_evictions/(summary.clean_evictions + summary.dirty_evictions);
+    	}
+    	
+    	System.out.println("\tPercentage dirty evictions: " + String.format("%.2f", percent_dirty) + "%");
     	System.out.println("");
     }
     

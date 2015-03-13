@@ -1,11 +1,12 @@
 package mmu;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.ListIterator;
 
 public class Memory {
 
+	//A list of frames which behaves just like in actual hardware - a linear array
+	//of frames.
 	private static ArrayList<Frame> frames = new ArrayList<Frame>();
 	//For use with the LRU replacement policy
 	public static LRUStruct lru_list = new LRUStruct();
@@ -20,12 +21,13 @@ public class Memory {
 	}
 	
 	//All calls to allocateFrame indicate that a page fault happened
+	//All calls also indicate that a disk access happened
 	public static int allocateFrame(PTE pte_ref, int pid){
 		int page_index = next_frame;
 		if(next_frame < num_frames){
 			frames.add(page_index, new Frame(pte_ref));
 			pte_ref.present = true;
-			Simulator.memReference(pid);
+			Simulator.memReference(pid); //All modifications to PTEs (above) count as a memory reference
 			if(Settings.page_replacement == Settings.Policy.LRU){
 				lru_list.addNode(next_frame);
 			}
@@ -37,6 +39,7 @@ public class Memory {
 			frame.setPTE(pte_ref);
 		}
 		Simulator.pageFault(pid);
+		Simulator.diskAccess();
 		return page_index;
 	}
 	
@@ -48,6 +51,17 @@ public class Memory {
 		if(Settings.page_replacement == Settings.Policy.LRU){
 			lru_list.useNode(frame_num);
 		}
+	}
+	
+	public static void readFrame(int frame_num, int pid){
+		Simulator.memReference(pid);
+		frameHit(frame_num);
+	}
+	
+	public static void writeFrame(int frame_num, int pid){
+		Simulator.memReference(pid);
+		frames.get(frame_num).write();
+		frameHit(frame_num);
 	}
 
 	public static void print(){
