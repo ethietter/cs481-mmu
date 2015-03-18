@@ -9,18 +9,10 @@ public class Frame {
 	private TLBEntry tlb_entry;
 	
 	
-	
 	public Frame(PTE pte){
+		LookupLogInfo.addDiskAccess();
+		LookupLogInfo.addFrameAccess();
 		this.pte = pte;
-	}
-	
-	public Frame(PTE pte, TLBEntry tlb_entry){
-		this.pte = pte;
-		this.tlb_entry = tlb_entry;
-	}
-	
-	public Frame(){
-		
 	}
 	
 	public void evict(){
@@ -30,9 +22,18 @@ public class Frame {
 			LookupLogInfo.MemEviction.v_page = pte.page_num;
 			LookupLogInfo.MemEviction.pid = pte.pid;
 			pte.present = false;
-			//Disk access for evicting a dirty frame is already counted in Simulator.java
-			Simulator.frameEvicted(pte.pid, pte.modified);
-			Simulator.memReference(pte.pid);
+			LookupLogInfo.addPageTableAccess();
+			
+
+	    	if(pte.modified){
+	    		LookupLogInfo.addDirtyEviction();
+	    	}
+	    	else{
+	    		LookupLogInfo.addCleanEviction();
+	    	}
+    		LookupLogInfo.addDiskAccess();
+			//Simulator.frameEvicted(pte.pid, pte.modified);
+			//Simulator.memReference(pte.pid);
 			if(tlb_entry != null){
 				TLB.removeEntry(tlb_entry);
 			}
@@ -50,11 +51,16 @@ public class Frame {
 		this.tlb_entry = t;
 	}
 	
+	
 	public void write(){
 		pte.modified = true;
-		Simulator.memReference(pte.pid);
+		LookupLogInfo.addPageTableAccess();
+		LookupLogInfo.addFrameAccess();
 	}
 	
+	public void read(){
+		LookupLogInfo.addFrameAccess();
+	}
 	
 	public String toString(){
 		StringBuilder str = new StringBuilder();

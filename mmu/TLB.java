@@ -22,6 +22,7 @@ public class TLB {
 	a miss.
     */
     public static TLBEntry lookup(int vpn){
+    	LookupLogInfo.addTLBAccess();
         ListIterator<TLBEntry> it = cache.listIterator();
         TLBEntry item;
         while(it.hasNext()){
@@ -44,14 +45,17 @@ public class TLB {
         	LookupLogInfo.TLBEviction.v_page = cache.get((int) max_size).virtual_page;
             cache.remove((int) max_size);
         }
+		LookupLogInfo.addTLBAccess();
     }
     
     public static void removeEntry(TLBEntry entry){
     	cache.remove(entry);
+		LookupLogInfo.addTLBAccess();
     }
     
     public static void flush(){
     	cache.clear();
+		LookupLogInfo.addTLBAccess();
     }
     
     public static String getString(){

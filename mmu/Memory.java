@@ -27,7 +27,9 @@ public class Memory {
 		if(next_frame < num_frames){
 			frames.add(page_index, new Frame(pte_ref));
 			pte_ref.present = true;
-			Simulator.memReference(pid); //All modifications to PTEs (above) count as a memory reference
+			//A page table access does NOT need to be recorded here, because technically (according to the specs)
+			//the pte_ref.present bool is being set at the same time the translation is updated. It just happens
+			//elsewhere (when the PTE is looked up initially, in PageTable.java).
 			if(Settings.page_replacement == Settings.Policy.LRU){
 				lru_list.addNode(next_frame);
 			}
@@ -39,8 +41,6 @@ public class Memory {
 			frame.setPTE(pte_ref);
 		}
 		LookupLogInfo.page_fault = true;
-		Simulator.pageFault(pid);
-		Simulator.diskAccess();
 		return page_index;
 	}
 	
@@ -54,13 +54,12 @@ public class Memory {
 		}
 	}
 	
-	public static void readFrame(int frame_num, int pid){
-		Simulator.memReference(pid);
+	public static void readFrame(int frame_num){
+		frames.get(frame_num).read();
 		frameHit(frame_num);
 	}
 	
-	public static void writeFrame(int frame_num, int pid){
-		Simulator.memReference(pid);
+	public static void writeFrame(int frame_num){
 		frames.get(frame_num).write();
 		frameHit(frame_num);
 	}

@@ -47,7 +47,7 @@ public class Main{
     	System.out.println("Physical frame size (bytes): " + Settings.frame_size);
     	System.out.println("Number of physical frames: " + Settings.physical_size/Settings.frame_size);
     	System.out.println("Memory latency (milliseconds): " + String.format("%.6f", Settings.memory_latency/((double) 1000000)));
-    	System.out.println("Number of page table entries): " + String.format("%.0f", Math.pow(2, Settings.address_size)/Settings.frame_size));
+    	System.out.println("Number of page table entries: " + String.format("%.0f", Math.pow(2, Settings.address_size)/Settings.frame_size));
     	System.out.println("Page replacement strategy: " + Settings.page_replacement);
     	System.out.println("Disk latency (milliseconds): " + String.format("%.2f", (double) Settings.disk_latency));
     	System.out.println("Logging: " + (Settings.log_output ? "on" : "off"));

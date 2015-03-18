@@ -11,11 +11,8 @@ public class PageTable{
     	this.pid = pid;
     }
     
-    //Originally this just returned the valid PTE, hiding everything from the calling function. However,
-    //the calling function is logging stuff, so it needs to know if it page faulted. This is the least-hackish
-    //way I could think of managing that. Thought about introducing some global state variable, but that could
-    //have gotten dangerous in a hurry.
     public PTE getPTE(long v_address){
+    	LookupLogInfo.addPageTableAccess();
     	int page_num = Utils.getPage(v_address);
     	PTE pte;
     	
@@ -32,8 +29,6 @@ public class PageTable{
     			pte.setTranslation(page_num, Memory.allocateFrame(pte, pid), pid);
     		}
     	}
-    	
-    	Simulator.memReference(pid);
     	
     	return pte;
     }

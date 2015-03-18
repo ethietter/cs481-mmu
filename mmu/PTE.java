@@ -16,6 +16,7 @@ public class PTE {
 	}
 	
 	public void setTranslation(int page_num, int frame_num, int pid){
+    	LookupLogInfo.addPageTableAccess(); //If a PTE is written, a page table access needs to be recorded
 		this.valid = true;
 		this.page_num = page_num;
 		this.frame_num = frame_num;

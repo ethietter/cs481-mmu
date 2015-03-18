@@ -15,9 +15,9 @@ public class Simulator {
 	
 	private static long running_latency = 0; //In nanoseconds
 	private static int real_mem_ref_count = 0; //*Actual* memory references that the process knows about
-	private static int disk_accesses = 0;
-	private static int mem_accesses = 0;
-	private static int tlb_accesses = 0;
+	//private static int disk_accesses = 0;
+	//private static int mem_accesses = 0;
+	//private static int tlb_accesses = 0;
 	
 	private Simulator(){
 	}
@@ -62,27 +62,10 @@ public class Simulator {
 
 	private static void startLookup(AddressTrace trace){
 		LookupLogInfo.reset();
-		String op = "";
-		switch(trace.op){
-			case R:
-				op = "Load from";
-				break;
-			case W:
-				op = "Store to";
-				break;
-			case I:
-				op = "Instruction fetch from";
-				break;
-		}
-		log("Process[" + trace.pid + "]: " + op + " " + Utils.getHex(trace.v_address) +
-			" (page: " + Utils.getPage(trace.v_address) + ", offset: " + Utils.getOffset(trace.v_address) + ")\n");
+		LookupLogInfo.trace = trace;
 		
-		doLookup(trace);
-		LookupLogInfo.logState();
-	}
-	
-	private static void doLookup(AddressTrace trace){
 		doLookup(trace, false);
+		LookupLogInfo.logState(summaries.get(trace.pid));
 	}
 	
 	//The is_recursive parameter lets us know if this is the first call to doLookup.
@@ -98,10 +81,10 @@ public class Simulator {
     		if(!is_recursive) LookupLogInfo.tlb_hit = true;
     		
     		if(trace.op.equals(AddressTrace.Op.I) || trace.op.equals(AddressTrace.Op.R)){
-    			Memory.readFrame(entry.physical_frame, trace.pid);
+    			Memory.readFrame(entry.physical_frame);
     		}
     		if(trace.op.equals(AddressTrace.Op.W)){
-    			Memory.writeFrame(entry.physical_frame, trace.pid);
+    			Memory.writeFrame(entry.physical_frame);
     		}
     		
     		LookupLogInfo.v_page = entry.virtual_page;
@@ -120,7 +103,6 @@ public class Simulator {
     			curr_table = new PageTable(trace.pid);
     			page_tables.put(trace.pid, curr_table);
     		}
-    		tlbMiss(trace.pid);
     		PTE pte = curr_table.getPTE(trace.v_address);
     		entry = new TLBEntry(pte.page_num, pte.frame_num);
     		Memory.getFrame(pte.frame_num).setTLBEntry(entry);
@@ -129,53 +111,14 @@ public class Simulator {
     	}
     }
     
-    public static void pageFault(int pid){
-    	summaries.get(pid).page_faults++;
-    }
-    
-    
-    public static void frameEvicted(int pid, boolean is_dirty){
-    	if(is_dirty){
-    		summaries.get(pid).dirty_evictions++;
-    		diskAccess();
-    	}
-    	else{
-    		summaries.get(pid).clean_evictions++;
-    	}
-    }
-    
-    public static void tlbMiss(int pid){
-    	summaries.get(pid).tlb_misses++;
-    }
-
-    public static void memReference(int pid){
-    	summaries.get(pid).mem_references++;
-    	running_latency += Settings.memory_latency; //Already in nanoseconds
-    	mem_accesses++;
-    }
-    
-    public static void diskAccess(){
-    	running_latency += Settings.disk_latency * Math.pow(10, 6); //Convert milliseconds to nanoseconds
-    	disk_accesses++;
-    }
-    
-    public static void tlbAccess(){
-    	running_latency += Settings.tlb_latency; //Already in nanoseconds
-    	tlb_accesses++;
-    }
-    
     public static void printSummary(){
-    	double overall_latency = running_latency/((double) 1000000);
-    	double avg_latency = overall_latency/real_mem_ref_count;
-    	double slowdown = overall_latency/(real_mem_ref_count*((float) Settings.memory_latency)/1000000);
     	
     	//System.out.println("Mem=" + mem_accesses + " Disk=" + disk_accesses + " TLB=" + tlb_accesses);
     	
-    	System.out.println("Overall latency (milliseconds): " + String.format("%.6f", overall_latency) + ".");
-    	System.out.println("Average memory access latency (milliseconds/reference): " + String.format("%.6f", avg_latency) + ".");
-    	System.out.println("Slowdown: " + String.format("%.2f", slowdown) + ".");
-    	System.out.println("");
-    	
+
+    	double o_latency = 0;
+    	double o_avg_latency = 0;
+    	double o_slowdown = 0;
     	int o_mem_references = 0;
     	int o_tlb_misses = 0;
     	int o_page_faults = 0;
@@ -183,11 +126,18 @@ public class Simulator {
     	int o_dirty_evictions = 0;
     	double o_percent_dirty = 0;
     	
+    	/*
+    	double overall_latency = running_latency/((double) 1000000);
+    	double avg_latency = overall_latency/real_mem_ref_count;
+    	double slowdown = overall_latency/(real_mem_ref_count*((float) Settings.memory_latency)/1000000);
+    	*/
+    	
     	int[] process_ids = new int[summaries.size()];
     	int pid_index = 0;
 
     	for (Entry<Integer, SummaryData> entry : summaries.entrySet()) {
     		SummaryData summary = entry.getValue();
+    		o_latency			+= summary.running_latency;
     		o_mem_references	+= summary.mem_references;
     		o_tlb_misses 		+= summary.tlb_misses;
     		o_page_faults		+= summary.page_faults;
@@ -200,6 +150,16 @@ public class Simulator {
     	if(o_clean_evictions + o_dirty_evictions != 0){
     		o_percent_dirty = 100*o_dirty_evictions/(o_clean_evictions + o_dirty_evictions);
     	}
+    	
+    	o_latency = o_latency/((double) 1000000);
+    	o_avg_latency = o_latency/real_mem_ref_count;
+    	o_slowdown = o_latency/(real_mem_ref_count*((float) Settings.memory_latency)/1000000);
+
+    	System.out.println("Overall latency (milliseconds): " + String.format("%.6f", o_latency) + ".");
+    	System.out.println("Average memory access latency (milliseconds/reference): " + String.format("%.6f", o_avg_latency) + ".");
+    	System.out.println("Slowdown: " + String.format("%.2f", o_slowdown) + ".");
+    	System.out.println("");
+    	
     	System.out.println("Overall");
     	System.out.println("\tMemory References: " + o_mem_references);
     	System.out.println("\tTLB misses: " + o_tlb_misses);
