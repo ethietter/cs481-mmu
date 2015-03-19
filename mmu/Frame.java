@@ -8,11 +8,15 @@ public class Frame {
 	//Reference to the entry in the TLB that currently points to this frame
 	private TLBEntry tlb_entry;
 	
+	//For use with LFU and MFU eviction schemes
+	public long access_count;
+	
 	
 	public Frame(PTE pte){
 		LookupLogInfo.addDiskAccess();
 		LookupLogInfo.addFrameAccess();
 		this.pte = pte;
+		this.access_count = 0;
 	}
 	
 	public void evict(){
@@ -32,8 +36,6 @@ public class Frame {
 	    		LookupLogInfo.addCleanEviction();
 	    	}
     		LookupLogInfo.addDiskAccess();
-			//Simulator.frameEvicted(pte.pid, pte.modified);
-			//Simulator.memReference(pte.pid);
 			if(tlb_entry != null){
 				TLB.removeEntry(tlb_entry);
 			}
@@ -45,21 +47,40 @@ public class Frame {
 	
 	public void setPTE(PTE pte){
 		this.pte = pte;
+		this.pte.present = true;
 	}
 	
 	public void setTLBEntry(TLBEntry t){
 		this.tlb_entry = t;
 	}
 	
-	
 	public void write(){
 		pte.modified = true;
 		LookupLogInfo.addPageTableAccess();
 		LookupLogInfo.addFrameAccess();
+		if(Settings.page_replacement == Settings.Policy.LFU || Settings.page_replacement == Settings.Policy.MFU){
+			pte.access_count++;
+		}
 	}
 	
 	public void read(){
 		LookupLogInfo.addFrameAccess();
+		if(Settings.page_replacement == Settings.Policy.LFU || Settings.page_replacement == Settings.Policy.MFU){
+			pte.access_count++;
+		}
+	}
+	
+	//For use with the LFU and MFU eviction policies
+	public long getAccessCount(){
+		if(pte != null){
+			return pte.access_count;
+		}
+		if(Settings.page_replacement == Settings.Policy.LFU){
+			return Long.MAX_VALUE;
+		}
+		else{
+			return 0;
+		}
 	}
 	
 	public String toString(){

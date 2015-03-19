@@ -8,6 +8,8 @@ public class PTE {
 	int page_num;
 	int frame_num;
 	int pid;
+	//For the LFU and MFU eviction policies
+	long access_count;
 	
 	public PTE(){
 		present = false;

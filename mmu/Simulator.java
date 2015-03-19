@@ -13,11 +13,7 @@ public class Simulator {
 	private static HashMap<Integer, SummaryData> summaries = new HashMap<Integer, SummaryData>();
 	private static int curr_process;
 	
-	private static long running_latency = 0; //In nanoseconds
 	private static int real_mem_ref_count = 0; //*Actual* memory references that the process knows about
-	//private static int disk_accesses = 0;
-	//private static int mem_accesses = 0;
-	//private static int tlb_accesses = 0;
 	
 	private Simulator(){
 	}
@@ -47,13 +43,15 @@ public class Simulator {
 	
 	
 	public static void hardwareDump(){
-		System.out.println("Page tables: \n" + page_tables);
-		System.out.println("Memory: ");
+		System.err.println("***********************************************************");
+		System.err.println("");
+		System.err.println("Page tables: \n" + page_tables);
+		System.err.println("Memory: ");
 		Memory.print();
-		System.out.println("TLB: ");
-		System.out.println(TLB.getString());
-		System.out.println("LRU List: " + Memory.lru_list);
-		System.out.println("\n***********************************************************************************************************\n\n");
+		System.err.println("TLB: ");
+		System.err.println(TLB.getString());
+		System.err.println("LRU List: " + Memory.lru_list);
+		System.err.println("");
 	}
 	
 	public static void log(String str){
@@ -89,7 +87,7 @@ public class Simulator {
     		
     		LookupLogInfo.v_page = entry.virtual_page;
     		LookupLogInfo.frame = entry.physical_frame;
-        	//hardwareDump();
+        	if(Main.__DEBUG) hardwareDump();
     	}
     	else{//TLB miss
     		if(!is_recursive) {

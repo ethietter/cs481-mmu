@@ -1,7 +1,9 @@
 package mmu;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.ListIterator;
+
 
 public class Memory {
 
@@ -20,8 +22,6 @@ public class Memory {
 		num_frames = (int) (Settings.physical_size/Settings.frame_size);
 	}
 	
-	//All calls to allocateFrame indicate that a page fault happened
-	//All calls also indicate that a disk access happened
 	public static int allocateFrame(PTE pte_ref, int pid){
 		int page_index = next_frame;
 		if(next_frame < num_frames){
@@ -40,6 +40,7 @@ public class Memory {
 			Frame frame = frames.get(page_index);
 			frame.setPTE(pte_ref);
 		}
+		//All calls to allocateFrame indicate that a page fault happened
 		LookupLogInfo.page_fault = true;
 		return page_index;
 	}
@@ -72,7 +73,7 @@ public class Memory {
         	str.append("\n\t" + it.next() + ",");
         }
         str.append("\n]");
-        System.out.println(str.toString());
+        System.err.println(str.toString());
 	}
 	
 	private static int evictFrame(){
@@ -86,17 +87,47 @@ public class Memory {
 				next_frame++;
 				break;
 			case LFU:
+				evicted = getLFU();
 				break;
 			case LRU:
 				evicted = lru_list.getLRUNode().val;
 				break;
 			case MFU:
+				evicted = getMFU();
 				break;
 			default:
 				break;
 		}
 		frames.get(evicted).evict();
 		return evicted;
+	}
+	
+	private static int getLFU(){
+		//First try it out with just a linear search, and see if it runs fast enough
+		long min_val = frames.get(0).getAccessCount(); 
+		int min_frame_index = 0; 
+		for(int i = 1; i < frames.size(); i++){
+			Frame curr_frame = frames.get(i);
+			if(curr_frame.getAccessCount() < min_val){
+				min_frame_index = i;
+				min_val = curr_frame.getAccessCount();
+			}
+		}
+		return min_frame_index;
+	}
+	
+	private static int getMFU(){
+		//First try it out with just a linear search, and see if it runs fast enough
+		long max_val = frames.get(0).getAccessCount(); 
+		int max_frame_index = 0; 
+		for(int i = 1; i < frames.size(); i++){
+			Frame curr_frame = frames.get(i);
+			if(curr_frame.getAccessCount() > max_val){
+				max_frame_index = i;
+				max_val = curr_frame.getAccessCount();
+			}
+		}
+		return max_frame_index;
 	}
 	
 	 

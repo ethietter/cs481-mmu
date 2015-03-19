@@ -5,6 +5,9 @@ import java.util.Calendar;
 
 public class Main{
 
+	public static final boolean __DEBUG = true;
+	private static long t_start, t_end;
+	
     public static void main(String[] args){
     	
     	if(args.length != 2){
@@ -24,13 +27,13 @@ public class Main{
 		
     	Simulator.init();
 		
-		long t_start = Calendar.getInstance().getTimeInMillis();
+		t_start = Calendar.getInstance().getTimeInMillis();
 		if(!Simulator.run(trace_path)) printHelp();
-		long t_end = Calendar.getInstance().getTimeInMillis();
+		t_end = Calendar.getInstance().getTimeInMillis();
 		
 		Simulator.printSummary();
 		
-		System.out.println("Simulation run time: " + (t_end - t_start));
+		if(__DEBUG) System.out.println("Simulation run time: " + (t_end - t_start));
     }
     
     public static void printHelp(){
