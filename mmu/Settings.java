@@ -13,7 +13,7 @@ public final class Settings {
     public static final int address_size = 32; //32 bit virtual addresses
     public static long physical_size;
     public static long frame_size;
-    public static int frame_bits; //How many bits are needed to choose a frame = lg(frame_size)
+    public static int frame_bits; //How many bits are needed to index each frame = 32 - lg(frame_size)
     public static int memory_latency; //in nanoseconds
     public static Policy page_replacement;
     public static long tlb_size;
@@ -39,7 +39,7 @@ public final class Settings {
     		return false;
     	}
 
-        frame_bits = (int) (Math.log(frame_size)/Math.log(2));
+        frame_bits = 32 - ((int) (Math.log(frame_size)/Math.log(2)));
         int offset_bits = address_size - frame_bits;
         offset_mask = 0;
         for(int i = 0; i < offset_bits; i++){

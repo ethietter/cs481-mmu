@@ -11,7 +11,7 @@ public final class Utils {
 	}
 	
     public static int getPage(long address){
-    	return (int) (address >> (Settings.address_size - Settings.frame_bits));
+    	return (int) (address >>> (Settings.address_size - Settings.frame_bits));
     }
     
     public static int getOffset(long address){

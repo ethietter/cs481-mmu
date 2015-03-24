@@ -5,7 +5,7 @@ import java.util.Calendar;
 
 public class Main{
 
-	public static final boolean __DEBUG = true;
+	public static final boolean __DEBUG = false;
 	private static long t_start, t_end;
 	
     public static void main(String[] args){
