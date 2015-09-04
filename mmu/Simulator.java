@@ -26,9 +26,16 @@ public class Simulator {
 		try {
     		BufferedReader reader = new BufferedReader(new FileReader(trace_path));
     	    String line;
+    	    //int count = 0;
     	    while ((line = reader.readLine()) != null) {
     	    	//System.out.println(parseAsTrace(line));
     	    	real_mem_ref_count++;
+    	    	/*
+    	    	count++;
+    	    	if(count % 10000 == 0){
+    	    		System.out.println(count);
+    	    	}
+    	    	*/
     	    	startLookup(parseAsTrace(line));
     	    }
     	    reader.close();
