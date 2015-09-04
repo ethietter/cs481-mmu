@@ -1,0 +1,6 @@
+#!/bin/bash
+cd $(dirname $0)
+
+CONFIG=$1
+TRACES=$2
+java -cp bin mmu.Main $CONFIG $TRACES
