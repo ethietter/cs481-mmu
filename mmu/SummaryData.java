@@ -7,7 +7,7 @@ public class SummaryData {
 	int page_faults = 0;
 	int clean_evictions = 0;
 	int dirty_evictions = 0;
-	int running_latency = 0;
+	long running_latency = 0;
 	
 	public SummaryData(){
 		

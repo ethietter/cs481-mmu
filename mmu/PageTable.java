@@ -1,11 +1,13 @@
 package mmu;
 
+import java.util.HashMap;
+
 
 public class PageTable{
 
     int pid;
     
-    SparseArray<PTE> contents = new SparseArray<PTE>();
+    HashMap<Integer, PTE> contents = new HashMap<Integer, PTE>();
     
     public PageTable(int pid){
     	this.pid = pid;
@@ -21,7 +23,8 @@ public class PageTable{
     	if((pte = contents.get(page_num)) == null){
     		pte = new PTE();
     		pte.setTranslation(page_num, Memory.allocateFrame(pte, pid), pid);
-    		contents.add(page_num, pte);
+    		//contents.add(page_num, pte);
+    		contents.put(page_num , pte);
     	}
     	else {
     		pte = contents.get(page_num);
