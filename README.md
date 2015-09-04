@@ -20,7 +20,9 @@ javac -d bin src\mmu\*.java
 ```
 
 And run with:
+```
 java -cp bin mmu.Main <config file> <trace file>
+```
 
 ## Configuration
 
