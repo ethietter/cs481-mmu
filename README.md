@@ -14,7 +14,7 @@ If you are running on a *nix platform, running the Makefile will produce a .sh s
 
 Alternatively, on Windows you can compile with:
 
-```bash
+```
 mkdir bin
 javac -d bin src\mmu\*.java
 ```
