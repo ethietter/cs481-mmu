@@ -43,11 +43,11 @@ physical-memory-size: amount of physical memory the simulated machine has, in by
 frame-size: size of physical frames and virtual pages, in bytes  
 memory-latency: time, in nanoseconds, to read/write to physical memory  
 page-replacement: policy the MMU uses to evict frames from physical memory. Available options:  
-	- LRU (Least recently used)  
-	- LFU (Least frequently used)  
-	- MFU (Most frequently used)  
-	- RANDOM  
-	- FIFO (First-in-first-out)  
+* LRU (Least recently used)  
+* LFU (Least frequently used)  
+* MFU (Most frequently used)  
+* RANDOM  
+* FIFO (First-in-first-out)  
 tlb-size: number of entries stored in the translation lookaside buffer. TLB evictions are made based on a LFU policy  
 tlb-latency: time, in nanoseconds, to read an entry from the TLB  
 disk-latency: time, in nanoseconds, to read/write to disk  
