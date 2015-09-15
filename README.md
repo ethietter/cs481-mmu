@@ -39,19 +39,19 @@ disk-latency: 10
 logging-output: off
 ```
 
-physical-memory-size: amount of physical memory the simulated machine has, in bytes
-frame-size: size of physical frames and virtual pages, in bytes
-memory-latency: time, in nanoseconds, to read/write to physical memory
-page-replacement: policy the MMU uses to evict frames from physical memory. Available options:
-	- LRU (Least recently used)
-	- LFU (Least frequently used)
-	- MFU (Most frequently used)
-	- RANDOM
-	- FIFO (First-in-first-out)
-tlb-size: number of entries stored in the translation lookaside buffer. TLB evictions are made based on a LFU policy
-tlb-latency: time, in nanoseconds, to read an entry from the TLB
-disk-latency: time, in nanoseconds, to read/write to disk
-logging-output: "off" or "on". Provides additional details for each entry in the trace file (not recommended for large trace files)
+physical-memory-size: amount of physical memory the simulated machine has, in bytes  
+frame-size: size of physical frames and virtual pages, in bytes  
+memory-latency: time, in nanoseconds, to read/write to physical memory  
+page-replacement: policy the MMU uses to evict frames from physical memory. Available options:  
+	- LRU (Least recently used)  
+	- LFU (Least frequently used)  
+	- MFU (Most frequently used)  
+	- RANDOM  
+	- FIFO (First-in-first-out)  
+tlb-size: number of entries stored in the translation lookaside buffer. TLB evictions are made based on a LFU policy  
+tlb-latency: time, in nanoseconds, to read an entry from the TLB  
+disk-latency: time, in nanoseconds, to read/write to disk  
+logging-output: "off" or "on". Provides additional details for each entry in the trace file (not recommended for large trace files)  
 
 The trace file is a text file with the following format. This file can contain an arbitrary number of memory references. Each reference goes on its own line.
 Available operations are I, R, and W. I is an instruction fetch, R is a read, and W is a write.
