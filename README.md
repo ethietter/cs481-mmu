@@ -48,6 +48,7 @@ page-replacement: policy the MMU uses to evict frames from physical memory. Avai
 * MFU (Most frequently used)  
 * RANDOM  
 * FIFO (First-in-first-out)  
+
 tlb-size: number of entries stored in the translation lookaside buffer. TLB evictions are made based on a LFU policy  
 tlb-latency: time, in nanoseconds, to read an entry from the TLB  
 disk-latency: time, in nanoseconds, to read/write to disk  
